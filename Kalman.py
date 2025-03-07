@@ -4,6 +4,15 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
 
+# Simulation Constants
+number_of_simulations = 100
+max_steps = 10000
+show_plots = False
+
+missile_reached_goal = 0
+missile_intercepted = 0
+
+
 # Define the missile environment
 class MissileEnv:
     def __init__(self, bounds=(1000, 1000, 1000), velocity=100):
@@ -95,93 +104,120 @@ class AntiMissile:
     def get_state(self):
         return self.position.copy()
 
-# Initialize environment and Kalman Filter
-env = MissileEnv()
-antimissile = AntiMissile(env)
-kf = KalmanFilter(env.get_state())  
 
-env.reset()
-missile_traj = []
-antimissile_traj = []
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
-# Simulation update function
 
-simulation_ended = False
-
-def update(frame):
-    if not env.is_goal_reached() and not antimissile.intercepted:
-        # Kalman Filter estimates next move
-        kf.predict(dt=0.05)
+def run_simulation(max_steps=100, show_plots=False, num_simulations=100):
+    global missile_reached_goal, missile_intercepted
+    
+    missile_reached_goal = 0
+    missile_intercepted = 0
+    
+    for _ in range(num_simulations):
+        env = MissileEnv()
+        antimissile = AntiMissile(env)
+        kf = KalmanFilter(env.get_state())
         
-        # Predict anti-missile movement
-        antimissile.proportional_navigation()
-
-        # Simulated measurement (with noise)
-        noisy_measurement = env.get_state() + np.random.normal(0, 10, 3)
-        kf.update(noisy_measurement)
-
-        # Move the missile towards estimated goal while avoiding the anti-missile
-        goal_direction = env.goal - kf.get_position()
-        evade_direction = kf.get_position() - antimissile.get_state()
+        env.reset()
+        missile_traj = []
+        antimissile_traj = []
+        simulation_ended = False
+        steps = 0
         
-        combined_direction = goal_direction + 0.5 * evade_direction  
-        combined_direction /= np.linalg.norm(combined_direction)  
+        if not show_plots:
+            while not simulation_ended:
+                if not env.is_goal_reached() and not antimissile.intercepted:
+                    kf.predict(dt=0.05)
+                    antimissile.proportional_navigation()
+                    
+                    noisy_measurement = env.get_state() + np.random.normal(0, 10, 3)
+                    kf.update(noisy_measurement)
+                    
+                    goal_direction = env.goal - kf.get_position()
+                    evade_direction = kf.get_position() - antimissile.get_state()
+                    combined_direction = goal_direction + 0.5 * evade_direction  
+                    combined_direction /= np.linalg.norm(combined_direction)
+                    
+                    env.step(combined_direction)
+                    missile_traj.append(env.get_state())
+                    antimissile_traj.append(antimissile.get_state())
+                    
+                    if steps > max_steps:
+                        print("❌ Simulation ended due to max steps reached")
+                        break
+                    steps += 1
+                else:
+                    if env.is_goal_reached():
+                        print("✅ Missile reached the goal!")
+                        missile_reached_goal += 1
+                    elif antimissile.intercepted:
+                        print("❌ Anti-Missile intercepted the missile!")
+                        missile_intercepted += 1
+                    simulation_ended = True
+        else:
+            def update(frame):
+                nonlocal simulation_ended
+                if not simulation_ended:
+                    if not env.is_goal_reached() and not antimissile.intercepted:
+                        kf.predict(dt=0.05)
+                        antimissile.proportional_navigation()
+                        
+                        noisy_measurement = env.get_state() + np.random.normal(0, 10, 3)
+                        kf.update(noisy_measurement)
+                        
+                        goal_direction = env.goal - kf.get_position()
+                        evade_direction = kf.get_position() - antimissile.get_state()
+                        combined_direction = goal_direction + 0.5 * evade_direction  
+                        combined_direction /= np.linalg.norm(combined_direction)
+                        
+                        env.step(combined_direction)
+                        missile_traj.append(env.get_state())
+                        antimissile_traj.append(antimissile.get_state())
+                    else:
+                        if env.is_goal_reached():
+                            print("✅ Missile reached the goal!")
+                            missile_reached_goal += 1
+                        elif antimissile.intercepted:
+                            print("❌ Anti-Missile intercepted the missile!")
+                            missile_intercepted += 1
+                        plt.close()
+                        simulation_ended = True
+                
+                ax.clear()
+                ax.set_xlim(0, env.bounds[0])
+                ax.set_ylim(0, env.bounds[1])
+                ax.set_zlim(0, env.bounds[2])
+                ax.scatter(*env.goal, color='red', s=100, label='Goal')
+                ax.scatter(*env.get_state(), color='blue', s=150, label='Missile')
+                ax.scatter(*antimissile.get_state(), color='green', s=150, label='Anti-Missile')
+                
+                if len(missile_traj) > 1:
+                    missile_path = np.array(missile_traj)
+                    ax.plot(missile_path[:, 0], missile_path[:, 1], missile_path[:, 2], color='blue', linestyle='solid', label='Missile Trajectory')
+                
+                if len(antimissile_traj) > 1:
+                    antimissile_path = np.array(antimissile_traj)
+                    ax.plot(antimissile_path[:, 0], antimissile_path[:, 1], antimissile_path[:, 2], color='green', linestyle='solid', label='Anti-Missile Trajectory')
+                
+                ax.legend()
+            
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ani = FuncAnimation(fig, update, frames=100, interval=200, blit=False)
+            plt.show()
+    
+    return missile_reached_goal, missile_intercepted, num_simulations - missile_reached_goal - missile_intercepted
 
-        env.step(combined_direction)  
-        missile_traj.append(env.get_state())
-        antimissile_traj.append(antimissile.get_state())
 
-        # Print distances for debugging
-        missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
-        missile_to_antimissile_dist = np.linalg.norm(env.get_state() - antimissile.get_state())
+if __name__ == "__main__":
+    missile_reached_goal, missile_intercepted, max_steps_reached = run_simulation(100, show_plots=show_plots, num_simulations=number_of_simulations)
+    
 
-        print(f"Frame {frame}: Missile-Goal Distance = {missile_to_goal_dist:.2f}, "
-              f"Missile-AntiMissile Distance = {missile_to_antimissile_dist:.2f}")
-
-    else:
-        # Final distances when simulation ends
-        missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
-        missile_to_antimissile_dist = np.linalg.norm(env.get_state() - antimissile.get_state())
-
-        print("\n--- Simulation Ended ---")
-        if env.is_goal_reached():
-            print("✅ Missile reached the goal!")
-        elif antimissile.intercepted:
-            print("❌ Anti-Missile intercepted the missile!")
-
-        print(f"Final Missile-Goal Distance: {missile_to_goal_dist:.2f}")
-        print(f"Final Missile-AntiMissile Distance: {missile_to_antimissile_dist:.2f}")
-
-    ax.clear()
-    ax.set_xlim(0, env.bounds[0])
-    ax.set_ylim(0, env.bounds[1])
-    ax.set_zlim(0, env.bounds[2])
-    ax.scatter(*env.goal, color='red', s=100, label='Goal')
-    ax.scatter(*env.get_state(), color='blue', s=150, label='Missile')
-    ax.scatter(*antimissile.get_state(), color='green', s=150, label='Anti-Missile')
-
-    if len(missile_traj) > 1:
-        missile_path = np.array(missile_traj)
-        ax.plot(missile_path[:, 0], missile_path[:, 1], missile_path[:, 2], color='blue', linestyle='solid', label='Missile Trajectory')
-
-    if len(antimissile_traj) > 1:
-        antimissile_path = np.array(antimissile_traj)
-        ax.plot(antimissile_path[:, 0], antimissile_path[:, 1], antimissile_path[:, 2], color='green', linestyle='solid', label='Anti-Missile Trajectory')
-
-    if antimissile.intercepted:
-        ax.scatter(*antimissile.intercept_point, color='green', marker='X', s=200, label='Collision')
-
-    if env.is_goal_reached():
-        ax.scatter(*env.goal, color='red', marker='X', s=200, label='Goal Reached')
-
-    ax.legend()
-
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-def animate():
-    ani = FuncAnimation(fig, update, frames=100, interval=200, blit=False)
-    plt.show()
-
-animate()
+    print(f"\nSimulation Results for Kalman Avoidance and Greedy Path planning:")
+    print(f"Missile reached goal in {missile_reached_goal} out of {number_of_simulations} simulations")
+    print(f"Missile intercepted in {missile_intercepted} out of {number_of_simulations} simulations")
+    print(f"Number of simulations that reached max steps: {max_steps_reached}")
+    print(f"Missile Success Rate: {round(missile_reached_goal / number_of_simulations * 100)}% and Anti-Missile Success Rate: {round((number_of_simulations - missile_reached_goal) / number_of_simulations * 100)}%\n")

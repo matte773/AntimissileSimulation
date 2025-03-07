@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/home/matt/projects/Classes/ENGR 570/deROSed_Quori_Study/.venv/bin/python3" "$0" "$@"
-' '''
+#!/home/matt/Documents/AntimissileSimulation/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

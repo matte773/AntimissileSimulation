@@ -4,10 +4,14 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
 
-#Global defaults for simulation
-number_of_simulations = 100
+# Simulation Constants
+number_of_simulations = 1000
 max_steps = 10000
 show_plots = False
+
+missile_reached_goal = 0
+missile_intercepted = 0
+
 
 # Define the missile environment
 class MissileEnv:
@@ -163,11 +167,8 @@ class AntiMissile:
     def get_state(self):
         return self.position.copy()
     
-def run_simulation(max_steps, show_plots=False):
-
-    # Run 100 simulations and track results
-    missile_reached_goal = 0
-    missile_intercepted = 0
+def run_simulation(max_steps, show_plots=False, number_of_simulations=100):
+    global missile_reached_goal, missile_intercepted
 
     for _ in range(number_of_simulations - 1):
 
@@ -303,9 +304,10 @@ def run_simulation(max_steps, show_plots=False):
             animate()
 
 if __name__ == "__main__":
-    results = run_simulation(100, show_plots=True)
+    results = run_simulation(max_steps=max_steps, show_plots=show_plots, number_of_simulations=number_of_simulations)
 
-    print(f"\nMissile reached goal in {missile_reached_goal} out of 100 simulations")
+    print(f"\nSimulation Results for POMDP planner:")
+    print(f"Missile reached goal in {missile_reached_goal} out of 100 simulations")
     print(f"Missile intercepted in {missile_intercepted} out of 100 simulations")
     print(f"Number of simulations that reached max steps: {number_of_simulations - missile_reached_goal - missile_intercepted}")
 
