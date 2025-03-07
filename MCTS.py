@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import random
 
 # Simulation Constants
-number_of_simulations = 100
+number_of_simulations = 1000
 max_steps = 10000
 show_plots = False
 
