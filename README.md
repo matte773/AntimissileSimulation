@@ -4,6 +4,11 @@
 In path planning, collision avoidance must be carefully balanced against the objective of reaching a designated goal. While many methods exist for path planning in both static and dynamic environments, these solutions become more difficult when the environment is assumed to be adversarial. In this paper, we investigate decision making methods for adversarial avoidance path planning in the context of an anti-missile avoidance game, where a missile aims to reach its
 target despite an active defense system seeking interception.
 
+To address this question, we map the problem onto a missile/anti-missile game scenario in a controlled simulation environment. A missile navigates toward a specified target, and the environment contains an adversarial threat that can intercept it. We examine three decision making approaches under uncertainty to avoid interception: 
+    • Monte Carlo Tree Search (MCTS): A simulation-based search technique that iteratively builds a decision tree, balancing exploration and exploitation.
+    • Partially Observable Markov Decision Process (POMDP): A probabilistic framework designed to handle situations where the true state of the environment is not fully known.
+    • Kalman Filtering-based Path Planning: An approach using state estimation to track positions and guide the missile through noisy or incomplete information. By varying factors such as start the target location, we can evaluate how each method performs in terms of collision avoidance and goal attainment.
+
 This project orginally started as a simulation world for an anti-missile to missile simulation so that these dynamic agents could be vessels to test path planning algorithms under uncertainty. This has further expanded into a project for the Winter 2025 Coding for Research class at OSU project. I wanted to use this follow on project as a method to tweak and test varibles in our missile, anti-missile, and path planning algorithms. 
 
 The follow on project orginally started as: 
@@ -14,3 +19,13 @@ This is an attempt at running the Quori Q&amp;A Study with the change of running
 This project was abandoned because the Quori Q&A interaction depended too heavily on ROS Service timings for the interaction to usefully be ported over to standalone python code. 
 
 ## Installation 
+
+1) Clone the git repository to your workspace
+
+```git clone https://github.com/matte773/AntimissileSimulation.git```
+
+2) Move into repository
+
+```cd AntimissileSimulation```
+
+## Running the code
