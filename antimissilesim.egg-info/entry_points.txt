@@ -1,2 +1,2 @@
 [console_scripts]
-antimissile-sim = antimissilesim.cli:main
+antimissilesim = antimissilesim.cli:main

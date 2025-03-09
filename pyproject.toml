@@ -16,11 +16,15 @@ requires-python = ">=3.8"
 dependencies = [
     "scipy>=1.6.0",
     "numpy",
-    "matplotlib"
+    "matplotlib", 
+    "pytest",
+    "pyyaml",
+    "lark", 
+    "colorama"
 ]
 
 [tool.setuptools]
 packages = ["antimissilesim"]
 
 [project.scripts]
-antimissile-sim = "antimissilesim.cli:main"  # For the CLI command
+antimissilesim = "antimissilesim.cli:main"  # For the CLI command

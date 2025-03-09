@@ -1,31 +1,138 @@
 # Anti-Missile Missile Simulation
 
-## About 
-In path planning, collision avoidance must be carefully balanced against the objective of reaching a designated goal. While many methods exist for path planning in both static and dynamic environments, these solutions become more difficult when the environment is assumed to be adversarial. In this paper, we investigate decision making methods for adversarial avoidance path planning in the context of an anti-missile avoidance game, where a missile aims to reach its
-target despite an active defense system seeking interception.
+## About
+In path planning, collision avoidance must be carefully balanced against the objective of reaching a designated goal. While many methods exist for path planning in both static and dynamic environments, these solutions become more difficult when the environment is assumed to be adversarial. In this project, we investigate decision-making methods for adversarial avoidance path planning in the context of an anti-missile avoidance game, where a missile aims to reach its target despite an active defense system seeking interception.
 
-To address this question, we map the problem onto a missile/anti-missile game scenario in a controlled simulation environment. A missile navigates toward a specified target, and the environment contains an adversarial threat that can intercept it. We examine three decision making approaches under uncertainty to avoid interception: 
-    • Monte Carlo Tree Search (MCTS): A simulation-based search technique that iteratively builds a decision tree, balancing exploration and exploitation.
-    • Partially Observable Markov Decision Process (POMDP): A probabilistic framework designed to handle situations where the true state of the environment is not fully known.
-    • Kalman Filtering-based Path Planning: An approach using state estimation to track positions and guide the missile through noisy or incomplete information. By varying factors such as start the target location, we can evaluate how each method performs in terms of collision avoidance and goal attainment.
+To address this question, we map the problem onto a missile/anti-missile game scenario in a controlled simulation environment. A missile navigates toward a specified target, and the environment contains an adversarial threat that can intercept it. We examine three decision-making approaches under uncertainty to avoid interception:
 
-This project orginally started as a simulation world for an anti-missile to missile simulation so that these dynamic agents could be vessels to test path planning algorithms under uncertainty. This has further expanded into a project for the Winter 2025 Coding for Research class at OSU project. I wanted to use this follow on project as a method to tweak and test varibles in our missile, anti-missile, and path planning algorithms. 
+- **Monte Carlo Tree Search (MCTS):** A simulation-based search technique that iteratively builds a decision tree, balancing exploration and exploitation.
+- **Partially Observable Markov Decision Process (POMDP):** A probabilistic framework designed to handle situations where the true state of the environment is not fully known.
+- **Kalman Filtering-based Path Planning:** An approach using state estimation to track positions and guide the missile through noisy or incomplete information. By varying factors such as the start and target location, we can evaluate how each method performs in terms of collision avoidance and goal attainment.
 
-The follow on project orginally started as: 
+## Installation
 
-### deROSed_Quori_Study
-This is an attempt at running the Quori Q&amp;A Study with the change of running standalone on python3. This is a project for ENGR 570, Winter 2025.
+To install the package and its dependencies, follow these steps:
 
-This project was abandoned because the Quori Q&A interaction depended too heavily on ROS Service timings for the interaction to usefully be ported over to standalone python code. 
+### Clone the Repository
 
-## Installation 
+```sh
+git clone https://github.com/matte773/AntimissileSimulation.git
+cd AntimissileSimulation
+```
 
-1) Clone the git repository to your workspace
+To enter into the venv enter the following:
+Using `pip`, install the package in editable mode:
 
-```git clone https://github.com/matte773/AntimissileSimulation.git```
+```sh
+source .venv/bin/activate
+```
 
-2) Move into repository
+### Install the Package
 
-```cd AntimissileSimulation```
+Using `pip`, install the package in editable mode:
 
-## Running the code
+```sh
+pip install -e .
+```
+
+## Running the Code
+
+Once installed, you can run the anti-missile simulation using the `cli.py` script with different modes and options.
+
+### Basic Usage
+
+Run the default simulation using Kalman filtering:
+
+```sh
+python -m AntimissileSimulation.cli --mode kalman
+```
+
+Run using Monte Carlo Tree Search (MCTS):
+
+```sh
+python -m AntimissileSimulation.cli --mode mcts
+```
+
+Run using Partially Observable Markov Decision Process (POMDP):
+
+```sh
+python -m AntimissileSimulation.cli --mode pomdp
+```
+
+### Additional Flags
+
+You can customize the simulation by providing additional command-line arguments:
+
+- `--show_plots`: Enables plot animation (default is disabled).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --mode kalman --show_plots
+  ```
+
+- `--num_simulations <int>`: Number of simulations to run (default: 100).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --num_simulations 500
+  ```
+
+- `--max_steps <int>`: Maximum number of steps per simulation (default: 1000).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --max_steps 2000
+  ```
+
+- `--missile_position <x y z>`: Initial missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --missile_position 0 0 100
+  ```
+
+- `--antimissile_position <x y z>`: Initial anti-missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --antimissile_position 10 10 200
+  ```
+
+- `--goal_position <x y z>`: Goal position for the missile. If this flag is left out the inital position will be randomized (recommended).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --goal_position 50 50 0
+  ```
+
+- `--missile_velocity <float>`: Set missile velocity (default: 100).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --missile_velocity 150
+  ```
+
+- `--antimissile_velocity <float>`: Set anti-missile velocity (default: 105).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --antimissile_velocity 120
+  ```
+
+- `--weighting_factor <float>`: Adjusts evade weighting factor (default varies by mode: Kalman=0.5, MCTS=0.3, POMDP=0.8).
+  
+  ```sh
+  python -m AntimissileSimulation.cli --weighting_factor 0.6
+  ```
+
+## Testing
+
+The package includes a test suite to verify functionality. Run the tests using:
+
+```sh
+  python -m AntimissileSimulation.cli --weighting_factor 0.6
+  ```
+
+## Continuous Integration
+
+This repository supports continuous integration (CI) via GitHub Actions. Every push and pull request triggers automated testing to ensure code integrity.
+
+## Contributing
+
+Contributions to improve the simulation and its decision-making algorithms are welcome. Feel free to fork the repository, make changes, and submit a pull request.
+
+## License
+
+This project is licensed under the BSD 3-Clause License. See the LICENSE file for details.
