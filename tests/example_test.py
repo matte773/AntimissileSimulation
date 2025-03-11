@@ -1,68 +1,6 @@
-# import pytest
-# import sys
-# from antimissilesim import mcts as MCTS
-# from antimissilesim import pomdp as POMDP
-# from antimissilesim import kalman as Kalman
-
-# # @pytest.mark.skipif(sys.platform == 'win32', reason="Skipping Windows-specific tests on non-Windows platforms")
-
-# def test_import():
-#     """Ensure the package is importable."""
-#     try:
-#         # Attempt to import the package
-#         # This will raise an ImportError if the package is not found
-#         print("Importing antimissilesim...")
-#         import antimissilesim
-#         print("Import successful.")
-#         print("Modules available:")
-#         print("mcts:", MCTS)
-#         print("pomdp:", POMDP)
-#         print("kalman:", Kalman)
-
-#         print("\nTest Passed ✅: Package imported successfully.")
-#         print
-#     except ImportError:
-#         print("\nTest Failed ❌: Package failed to import.")
-#         pytest.fail("Package failed to import")
-
-# def test_mcts():
-#     """Test that Monte Carlo Tree Search runs without errors."""
-#     mcts = MCTS()
-#     action = mcts.run()
-#     assert action is not None, "MCTS returned no action"
-
-# def test_pomdp():
-#     """Test that POMDP runs without errors."""
-#     pomdp = POMDP()
-#     action = pomdp.run()
-#     assert action is not None, "POMDP returned no action"
-
-# def test_kalman_filter():
-#     """Test that Kalman filtering updates state correctly."""
-#     kf = Kalman()
-#     state = kf.predict()
-#     assert state is not None, "Kalman filter returned no prediction"
-
-# def test_cli_kalman():
-#     """Test CLI execution for Kalman mode."""
-#     # Add a platform check to ensure it's not running pywin32-specific code on Linux
-#     if sys.platform != "win32":  # Skip Windows-specific tests on Linux
-#         result = subprocess.run(["python", "-m", "antimissilesim.cli", "--mode", "kalman"], capture_output=True)
-#         assert result.returncode == 0, "CLI execution failed for Kalman mode"
-
-# def test_cli_mcts():
-#     """Test CLI execution for MCTS mode."""
-#     if sys.platform != "win32":  # Skip Windows-specific tests on Linux
-#         result = subprocess.run(["python", "-m", "antimissilesim.cli", "--mode", "mcts"], capture_output=True)
-#         assert result.returncode == 0, "CLI execution failed for MCTS mode"
-
-# def test_cli_pomdp():
-#     """Test CLI execution for POMDP mode."""
-#     if sys.platform != "win32":  # Skip Windows-specific tests on Linux
-#         result = subprocess.run(["python", "-m", "antimissilesim.cli", "--mode", "pomdp"], capture_output=True)
-#         assert result.returncode == 0, "CLI execution failed for POMDP mode"import pytest
 import sys
 import pytest
+import logging
 import subprocess
 from antimissilesim import mcts as MCTS
 from antimissilesim import pomdp as POMDP
@@ -70,105 +8,139 @@ from antimissilesim import kalman as Kalman
 
 pytestmark = pytest.mark.skipif(sys.platform == 'win32', reason="Tests in this module do not run on Windows")
 
+# Test that each mode imports successfully
 def test_import():
+    """Test if the package imports successfully."""
     try:
         import antimissilesim
-        print("Import successful.")
-        print("Modules available:")
-        print("mcts:", MCTS)
-        print("pomdp:", POMDP)
-        print("kalman:", Kalman)
-        print("\nTest Passed ✅: Package imported successfully.")
+        assert hasattr(antimissilesim, 'mcts')
+        assert hasattr(antimissilesim, 'pomdp')
+        assert hasattr(antimissilesim, 'kalman')
     except ImportError:
-        print("\nTest Failed ❌: Package failed to import.")
         pytest.fail("Package failed to import")
 
-def test_mcts():
+# Test that Kalman runs with various flag-value pairs
+@pytest.mark.parametrize("flags", [
+    [("--num_simulations", "1"), ("--max_steps", "1000")],  # Default flags
+    [("--num_simulations", "1"), ("--weighting_factor", "1.1")],  # Weighting factor > 1
+    [("--num_simulations", "1"), ("--weighting_factor", "-0.1")],  # Negative weighting factor
+    [("--num_simulations", "1"), 
+     ("--missile_position", "0,0,0"),  # Use a single string with multiple values
+     ("--antimissile_position", "500,500,500"),  # Same for antimissile position
+     ("--goal_position", "50,750,750")],  # Same for goal position
+    [("--num_simulations", "-1")], # Negative number of simulations
+    [("--num_simulations", "1"), ("--missile_velocity", "110"), ("--antimissile_velocity", "120")],  # Different velocities
+
+])
+def test_kalman_flags(flags):
+    """Test if Kalman runs successfully with multiple flag-value pairs."""
+    # Flatten the list of flag-value pairs into a single list of arguments
+    args = ["python", "-m", "antimissilesim", "--mode", "kalman"]
+    
+    for flag, value in flags:
+        if flag in ["--missile_position", "--antimissile_position", "--goal_position"]:
+            # Handle multi-value flags by splitting the string into individual components
+            value = value.split(",")
+            args.extend([flag] + value)
+        else:
+            args.extend([flag, value])
+
     result = subprocess.run(
-        ["python", "-m", "antimissilesim", "--mode", "mcts"],
+        args,
         capture_output=True,
-        text=True
+        text=True,
+        timeout=30  # Increased timeout to 60 seconds
     )
-    assert result.returncode == 0, f"MCTS failed with error: {result.stderr}"
 
-def test_pomdp():
+    # Check the captured output for any errors or prompts
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}")
+    else:
+        print(f"Success: {result.stdout}")
+
+    assert result.returncode == 0, f"Kalman with flags {flags} failed with error: {result.stderr}"
+
+# Test that MCTS runs with various flag-value pairs
+@pytest.mark.parametrize("flags", [
+    [("--num_simulations", "1"), ("--max_steps", "1000")],  # Default flags
+    [("--num_simulations", "1"), ("--weighting_factor", "1.1")],  # Weighting factor > 1
+    [("--num_simulations", "1"), ("--weighting_factor", "-0.1")],  # Negative weighting factor
+    [("--num_simulations", "1"), 
+     ("--missile_position", "0,0,0"),  # Use a single string with multiple values
+     ("--antimissile_position", "500,500,500"),  # Same for antimissile position
+     ("--goal_position", "50,750,750")],  # Same for goal position
+    [("--num_simulations", "-1")], # Negative number of simulations
+    [("--num_simulations", "1"), ("--missile_velocity", "110"), ("--antimissile_velocity", "120")],  # Different velocities
+
+])
+def test_mcts_flags(flags):
+    """Test if MCTS runs successfully with multiple flag-value pairs."""
+    # Flatten the list of flag-value pairs into a single list of arguments
+    args = ["python", "-m", "antimissilesim", "--mode", "mcts"]
+    
+    for flag, value in flags:
+        if flag in ["--missile_position", "--antimissile_position", "--goal_position"]:
+            # Handle multi-value flags by splitting the string into individual components
+            value = value.split(",")
+            args.extend([flag] + value)
+        else:
+            args.extend([flag, value])
+
     result = subprocess.run(
-        ["python", "-m", "antimissilesim", "--mode", "pomdp"],
+        args,
         capture_output=True,
-        text=True
+        text=True,
+        timeout=30  # Increased timeout to 60 seconds
     )
-    assert result.returncode == 0, f"POMDP failed with error: {result.stderr}"
 
-# def test_kalman():
-#     result = subprocess.run(
-#         ["python", "-m", "antimissilesim", "--mode", "kalman"],
-#         capture_output=True,
-#         text=True
-#     )
-#     assert result.returncode == 0, f"Kalman failed with error: {result.stderr}"
+    # Check the captured output for any errors or prompts
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}")
+    else:
+        print(f"Success: {result.stdout}")
 
-# @pytest.mark.parametrize("flag, value", [
-#     ("--show_plots", ""),
-#     ("--num_simulations", "500"),
-#     ("--max_steps", "2000"),
-#     ("--missile_position", "0 0 100"),
-#     ("--antimissile_position", "10 10 200"),
-#     ("--goal_position", "50 50 0"),
-#     ("--missile_velocity", "150"),
-#     ("--antimissile_velocity", "120"),
-#     ("--weighting_factor", "0.6"),
-# ])
-# def test_mcts_flags(flag, value):
-#     result = subprocess.run(
-#         ["python", "-m", "antimissilesim", "--mode", "mcts", flag, value],
-#         capture_output=True,
-#         text=True
-#     )
-#     assert result.returncode == 0, f"MCTS with {flag}={value} failed with error: {result.stderr}"
+    assert result.returncode == 0, f"MCTS with flags {flags} failed with error: {result.stderr}"
 
-# @pytest.mark.parametrize("flag, value", [
-#     ("--show_plots", ""),
-#     ("--num_simulations", "500"),
-#     ("--max_steps", "2000"),
-#     ("--missile_position", "0 0 100"),
-#     ("--antimissile_position", "10 10 200"),
-#     ("--goal_position", "50 50 0"),
-#     ("--missile_velocity", "150"),
-#     ("--antimissile_velocity", "120"),
-#     ("--weighting_factor", "0.6"),
-# ])
-# def test_pomdp_flags(flag, value):
-#     result = subprocess.run(
-#         ["python", "-m", "antimissilesim", "--mode", "pomdp", flag, value],
-#         capture_output=True,
-#         text=True
-#     )
-#     assert result.returncode == 0, f"POMDP with {flag}={value} failed with error: {result.stderr}"
+# Test that POMDP runs with various flag-value pairs
+@pytest.mark.parametrize("flags", [
+    [("--num_simulations", "1"), ("--max_steps", "1000")],  # Default flags
+    [("--num_simulations", "1"), ("--weighting_factor", "1.1")],  # Weighting factor > 1
+    [("--num_simulations", "1"), ("--weighting_factor", "-0.1")],  # Negative weighting factor
+    [("--num_simulations", "1"), 
+     ("--missile_position", "0,0,0"),  # Use a single string with multiple values
+     ("--antimissile_position", "500,500,500"),  # Same for antimissile position
+     ("--goal_position", "50,750,750")],  # Same for goal position
+    [("--num_simulations", "-1")], # Negative number of simulations
+    [("--num_simulations", "1"), ("--missile_velocity", "110"), ("--antimissile_velocity", "120")],  # Different velocities
 
-# @pytest.mark.parametrize("flag, value", [
-#     ("--show_plots", ""),
-#     ("--num_simulations", "500"),
-#     ("--max_steps", "2000"),
-#     ("--missile_position", "0 0 100"),
-#     ("--antimissile_position", "10 10 200"),
-#     ("--goal_position", "50 50 0"),
-#     ("--missile_velocity", "150"),
-#     ("--antimissile_velocity", "120"),
-#     ("--weighting_factor", "0.6"),
-# ])
+])
+def test_pomdp_flags(flags):
+    """Test if POMDP runs successfully with multiple flag-value pairs."""
+    # Flatten the list of flag-value pairs into a single list of arguments
+    args = ["python", "-m", "antimissilesim", "--mode", "pomdp"]
+    
+    for flag, value in flags:
+        if flag in ["--missile_position", "--antimissile_position", "--goal_position"]:
+            # Handle multi-value flags by splitting the string into individual components
+            value = value.split(",")
+            args.extend([flag] + value)
+        else:
+            args.extend([flag, value])
 
-# def test_kalman_flags(flag, value):
-#     result = subprocess.run(
-#         ["python", "-m", "antimissilesim", "--mode", "kalman", flag, value],
-#         capture_output=True,
-#         text=True
-#     )
-#     assert result.returncode == 0, f"Kalman with {flag}={value} failed with error: {result.stderr}"
+    result = subprocess.run(
+        args,
+        capture_output=True,
+        text=True,
+        timeout=30  # Increased timeout to 60 seconds
+    )
 
-# if __name__ == "__main__":
-#     pytest.main()
+    # Check the captured output for any errors or prompts
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}")
+    else:
+        print(f"Success: {result.stdout}")
 
-# if __name__ == "__main__":
-#     # pytest.main()
-#     # Run the tests
-#     test_import()
+    assert result.returncode == 0, f"POMDP with flags {flags} failed with error: {result.stderr}"
+    
+if __name__ == "__main__":
+    pytest.main()

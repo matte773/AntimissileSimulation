@@ -2,6 +2,7 @@ LICENSE
 README.md
 pyproject.toml
 antimissilesim/__init__.py
+antimissilesim/__main__.py
 antimissilesim/cli.py
 antimissilesim/kalman.py
 antimissilesim/mcts.py
