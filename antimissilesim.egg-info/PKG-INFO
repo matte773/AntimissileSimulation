@@ -136,10 +136,10 @@ You can customize the simulation by providing additional command-line arguments:
 
 ## Testing
 
-The package includes a test suite to verify functionality. Run the tests using:
+The package includes a test suite to verify functionality. The testing file is located in /test/example_test.py Run the tests using:
 
 ```sh
-  python -m AntimissileSimulation.cli --weighting_factor 0.6
+  pytest
   ```
 
 ## Continuous Integration

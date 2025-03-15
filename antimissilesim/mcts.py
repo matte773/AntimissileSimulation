@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
+import time
 
 # Define the missile environment
 class MissileEnv: 
@@ -166,6 +167,8 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
         antimissile_traj = []
         simulation_ended = False
         steps = 0
+        start_time = time.perf_counter()
+
         
         if not show_plots:
             while not simulation_ended:
@@ -188,6 +191,21 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                     elif antimissile.intercepted:
                         print("❌ Anti-Missile intercepted the missile!")
                         missile_intercepted += 1
+
+                    missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)   
+
+                    # Optional: Print final distances
+                    # print(f"Final Missile-Goal Distance: {missile_to_goal_dist:.2f}")
+                    # print(f"Final Missile-AntiMissile Distance: {missile_to_antimissile_dist:.2f}")
+                    # print(f"{missile_to_goal_dist:.2f}")
+                    # print(f"{missile_to_antimissile_dist:.2f}")
+
+                    # Optional: Print elapsed time
+                    end_time = time.perf_counter()
+                    elapsed_time = end_time - start_time
+                    # print(f"Elapsed time: {elapsed_time:.4f} seconds")
+                    # print(f"{elapsed_time:.4f}")
+
                     simulation_ended = True
         else:
             def update(frame):
@@ -239,6 +257,8 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
 
             def animate():
                 ani = FuncAnimation(fig, update, frames=100, interval=200, blit=False)
+                # Uncomment to save the animation
+                # ani.save('mcts.gif', writer='pillow', fps=10)
                 plt.show()
 
             animate()

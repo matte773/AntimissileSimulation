@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
+import time
 
 # Define the missile environment
 class MissileEnv:    
@@ -168,6 +169,10 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
         # Simulation update function
         simulation_ended = False
         steps = 0
+
+        start_time = time.perf_counter()
+
+        # Run simulation
         if not show_plots:
             while not simulation_ended:
                 if not env.is_goal_reached() and not antimissile.intercepted:
@@ -199,22 +204,33 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                     missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
                     missile_to_antimissile_dist = np.linalg.norm(env.get_state() - antimissile.get_state())
 
-                    print("\n--- Simulation Ended ---")
+                    # print("\n--- Simulation Ended ---")
                     if env.is_goal_reached():
                         print("✅ Missile reached the goal!")
                         missile_reached_goal += 1
                     elif antimissile.intercepted:
                         print("❌ Anti-Missile intercepted the missile!")
                         missile_intercepted += 1
+                        
 
                     # Optional: Print final distances
                     # print(f"Final Missile-Goal Distance: {missile_to_goal_dist:.2f}")
                     # print(f"Final Missile-AntiMissile Distance: {missile_to_antimissile_dist:.2f}")
+                    # print(f"{missile_to_goal_dist:.2f}")
+                    # print(f"{missile_to_antimissile_dist:.2f}")
+
+                    # Optional: Print elapsed time
+                    end_time = time.perf_counter()
+                    elapsed_time = end_time - start_time
+                    # print(f"Elapsed time: {elapsed_time:.4f} seconds")
+                    # print(f"{elapsed_time:.4f}")
 
                     simulation_ended = True
+        # Show plots
         else:
+            confounding = False
             def update(frame):
-                nonlocal simulation_ended, missile_reached_goal, missile_intercepted
+                nonlocal simulation_ended, missile_reached_goal, missile_intercepted, confounding, steps
 
                 simulation_ended = False
 
@@ -234,9 +250,18 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
                         missile_to_antimissile_dist = np.linalg.norm(env.get_state() - antimissile.get_state())
 
+                        print(f"Step {steps}")
+
                         # Optional: Print distances at each step
                         # print(f"Frame {frame}: Missile-Goal Distance = {missile_to_goal_dist:.2f}, "
                         #     f"Missile-AntiMissile Distance = {missile_to_antimissile_dist:.2f}")
+
+                        if steps > max_steps:
+                            print("\n--- Simulation Ended ---")
+                            print("❌ Simulation ended due to max steps reached")
+                            confounding = True
+                            return
+                        steps += 1
 
                     else:
                         missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
@@ -255,6 +280,8 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         # Optional: Print final distances
                         # print(f"Final Missile-Goal Distance: {missile_to_goal_dist:.2f}")
                         # print(f"Final Missile-AntiMissile Distance: {missile_to_antimissile_dist:.2f}")
+                        if env.is_goal_reached() and antimissile.intercepted:
+                            confounding=True
 
                         simulation_ended = True
 
@@ -287,13 +314,24 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
 
             def animate():
                 ani = FuncAnimation(fig, update, frames=100, interval=200, blit=False)
+                # Save before showing the animation
+                if confounding:
+                    print("Saving Both animation...")
+                    ani.save('pomdp_both.gif', writer='pillow', fps=10)
+                elif steps > max_steps:
+                    print("Saving No Collision animation...")
+                    ani.save('pomdp_no_collision.gif', writer='pillow', fps=10)
+                # Uncomment to save the animation
+                # else:
+                #     print("Saving animation...")
+                #     ani.save('pomdp.gif', writer='pillow', fps=10)
                 plt.show()
 
             animate()
 
     return missile_reached_goal, missile_intercepted, num_simulations - missile_reached_goal - missile_intercepted
 
-def main(show_plots=False, num_simulations=100, max_steps=10000, missile_position=None, antimissile_position=None, goal_position=None, missile_velocity=100, antimissile_velocity=105, weighting_factor=0.8):
+def main(show_plots=False, num_simulations=100, max_steps=500, missile_position=None, antimissile_position=None, goal_position=None, missile_velocity=100, antimissile_velocity=105, weighting_factor=0.8):
     
     missile_reached_goal, missile_intercepted, max_steps_reached = run_simulation(
         show_plots=show_plots, 
