@@ -85,14 +85,19 @@ class POMDPPlanner:
         reward = self.env.weight * goal_distance_change_norm + (1.0 - self.env.weight) * antimissile_distance_change_norm
 
         return reward
-
-    def search(self):
+    
+    # Most-Likely heuristic: Chooses the action that maximizes immediate reward 
+    # based on the most likely state estimate.
+    def most_likely_heuristic(self):
         best_action = None
         best_reward = float('-inf')
 
         for action in self.env.get_possible_actions():
             next_state = self.env.get_state() + action * self.env.velocity #* 0.05  # Simulate next state
             action_reward = self.reward(self.env.get_state(), action, next_state, self.env.goal)
+
+            # Optionally, print the action and its reward
+            #print(f"Evaluating action {action}, Reward: {action_reward}")  # Debugging output
 
             if action_reward > best_reward:
                 best_reward = action_reward
@@ -179,7 +184,7 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                     observation = env.get_state() + np.random.normal(0, 2, 3)  # Simulated noisy observation
                     pomdp.update_belief(observation)
                     
-                    best_action = pomdp.search()
+                    best_action = pomdp.most_likely_heuristic()
                     env.step(best_action)
                     missile_traj.append(env.get_state())
 
@@ -239,7 +244,7 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         observation = env.get_state() + np.random.normal(0, 2, 3)  # Simulated noisy observation
                         pomdp.update_belief(observation)
                         
-                        best_action = pomdp.search()
+                        best_action = pomdp.most_likely_heuristic()
                         env.step(best_action)
                         missile_traj.append(env.get_state())
 
@@ -250,7 +255,7 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         missile_to_goal_dist = np.linalg.norm(env.get_state() - env.goal)
                         missile_to_antimissile_dist = np.linalg.norm(env.get_state() - antimissile.get_state())
 
-                        print(f"Step {steps}")
+                        # print(f"Step {steps}")
 
                         # Optional: Print distances at each step
                         # print(f"Frame {frame}: Missile-Goal Distance = {missile_to_goal_dist:.2f}, "
@@ -271,15 +276,19 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         if env.is_goal_reached():
                             print("✅ Missile reached the goal!")
                             missile_reached_goal += 1
+                            input("Press Enter to continue...")
                             plt.close()
                         elif antimissile.intercepted:
                             print("❌ Anti-Missile intercepted the missile!")
                             missile_intercepted += 1
+                            input("Press Enter to continue...")
                             plt.close()
 
                         # Optional: Print final distances
                         # print(f"Final Missile-Goal Distance: {missile_to_goal_dist:.2f}")
                         # print(f"Final Missile-AntiMissile Distance: {missile_to_antimissile_dist:.2f}")
+
+
                         if env.is_goal_reached() and antimissile.intercepted:
                             confounding=True
 

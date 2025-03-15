@@ -44,19 +44,19 @@ Once installed, you can run the anti-missile simulation using the `cli.py` scrip
 Run the default simulation using Kalman filtering:
 
 ```sh
-python -m AntimissileSimulation.cli --mode kalman
+python -m antimissilesim --mode kalman
 ```
 
 Run using Monte Carlo Tree Search (MCTS):
 
 ```sh
-python -m AntimissileSimulation.cli --mode mcts
+python -m antimissilesim --mode mcts
 ```
 
 Run using Partially Observable Markov Decision Process (POMDP):
 
 ```sh
-python -m AntimissileSimulation.cli --mode pomdp
+python -m antimissilesim --mode pomdp
 ```
 
 ### Additional Flags
@@ -66,55 +66,55 @@ You can customize the simulation by providing additional command-line arguments:
 - `--show_plots`: Enables plot animation (default is disabled).
   
   ```sh
-  python -m AntimissileSimulation.cli --mode kalman --show_plots
+  python -m antimissilesim --mode kalman --show_plots
   ```
 
 - `--num_simulations <int>`: Number of simulations to run (default: 100).
   
   ```sh
-  python -m AntimissileSimulation.cli --num_simulations 500
+  python -m antimissilesim --num_simulations 500
   ```
 
 - `--max_steps <int>`: Maximum number of steps per simulation (default: 1000).
   
   ```sh
-  python -m AntimissileSimulation.cli --max_steps 2000
+  python -m antimissilesim --max_steps 2000
   ```
 
 - `--missile_position <x y z>`: Initial missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
   
   ```sh
-  python -m AntimissileSimulation.cli --missile_position 0 0 100
+  python -m antimissilesim --missile_position 0 0 100
   ```
 
 - `--antimissile_position <x y z>`: Initial anti-missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
   
   ```sh
-  python -m AntimissileSimulation.cli --antimissile_position 10 10 200
+  python -m antimissilesim --antimissile_position 10 10 200
   ```
 
 - `--goal_position <x y z>`: Goal position for the missile. If this flag is left out the inital position will be randomized (recommended).
   
   ```sh
-  python -m AntimissileSimulation.cli --goal_position 50 50 0
+  python -m antimissilesim --goal_position 50 50 0
   ```
 
 - `--missile_velocity <float>`: Set missile velocity (default: 100).
   
   ```sh
-  python -m AntimissileSimulation.cli --missile_velocity 150
+  python -m antimissilesim --missile_velocity 150
   ```
 
 - `--antimissile_velocity <float>`: Set anti-missile velocity (default: 105).
   
   ```sh
-  python -m AntimissileSimulation.cli --antimissile_velocity 120
+  python -m antimissilesim --antimissile_velocity 120
   ```
 
 - `--weighting_factor <float>`: Adjusts evade weighting factor (default varies by mode: Kalman=0.5, MCTS=0.3, POMDP=0.8).
   
   ```sh
-  python -m AntimissileSimulation.cli --weighting_factor 0.6
+  python -m antimissilesim --weighting_factor 0.6
   ```
 
 ## Testing
@@ -124,6 +124,26 @@ The package includes a test suite to verify functionality. The testing file is l
 ```sh
   pytest
   ```
+
+## POMDP Planner Details
+
+The POMDP planner uses a probabilistic framework to handle situations where the true state of the environment is not fully known. It maintains a belief state, which is a probability distribution over possible states.
+
+### Reward Function
+
+The reward function balances the goal-seeking behavior and evasion strategy. It is defined as:
+
+```python
+reward = self.env.weight * goal_distance_change_norm + (1.0 - self.env.weight) * antimissile_distance_change_norm
+```
+
+Where:
+- `goal_distance_change_norm` is the normalized change in distance to the goal.
+- `antimissile_distance_change_norm` is the normalized change in distance to the anti-missile.
+
+### Most-Likely Heuristic
+
+The most-likely heuristic chooses the action that maximizes the immediate reward based on the most likely state estimate. It evaluates all possible actions and selects the one with the highest reward.
 
 ## Continuous Integration
 
