@@ -21,10 +21,9 @@ cd AntimissileSimulation
 ```
 
 ### (Optional) Creating a Virtual Environment (venv)
-To enter into the venv, enter the following:
+To create / recreate the virtual environment using your OS's Python, enter the following:
 
 ```sh
-# Recreate the virtual environment using your OS's Python
 python -m venv .venv
 ```
 
@@ -40,7 +39,7 @@ Linux/Mac:
 source .venv/bin/activate
 ```
 
-# Upgrade pip
+Upgrade pip
 ```sh
 python -m pip install --upgrade pip
 ```
@@ -48,11 +47,13 @@ python -m pip install --upgrade pip
 ### (Optional) Destroying the Virtual Environment (venv)
 If the venv needs to be destroyed for any reason, use the following commands:
 
+Deactivate the virtual environment if it's active:
 ```sh
-#Deactivate the virtual environment if it's active:
 deactivate
+```
 
-#Remove the current virtual environment:
+Remove the current virtual environment:
+```sh
 Remove-Item -Recurse -Force .venv
 ```
 
@@ -153,7 +154,7 @@ The package includes a test suite to verify functionality. The testing file is l
 pytest
 ```
 
-If warnings occur in the output, this is due to pytest having trouble interpreting one of my print outputs that needs UTF-8 encoding set. If this occurs, it is not an issue; the package is still functional. To fix this, run the following command for pytest instead:
+If warnings occur in the output, this is due to pytest having trouble interpreting one of my print outputs that needs UTF-8 encoding set. If this occurs, it is **not** an issue; the package is still functional. To fix this, run the following command for pytest instead:
 
 ```sh
 python -X utf8 -m pytest
