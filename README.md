@@ -1,5 +1,7 @@
 # Anti-Missile Missile Simulation
 
+![Simulation Output](output_gifs/mcts_goal.gif)
+
 ## About
 In path planning, collision avoidance must be carefully balanced against the objective of reaching a designated goal. While many methods exist for path planning in both static and dynamic environments, these solutions become more difficult when the environment is assumed to be adversarial. In this project, we investigate decision-making methods for adversarial avoidance path planning in the context of an anti-missile avoidance game, where a missile aims to reach its target despite an active defense system seeking interception.
 
