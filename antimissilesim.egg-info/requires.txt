@@ -1,7 +1,0 @@
-scipy>=1.6.0
-numpy
-matplotlib
-pytest
-pyyaml
-lark
-colorama

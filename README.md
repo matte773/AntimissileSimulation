@@ -26,15 +26,22 @@ To enter into the venv, enter the following:
 ```sh
 # Recreate the virtual environment using your OS's Python
 python -m venv .venv
+```
 
-# Activate the new virtual environment
+Activate the new virtual environment
+
 Windows: 
+```sh
 .\.venv\Scripts\Activate
+```
 
 Linux/Mac:
+```sh
 source .venv/bin/activate
+```
 
 # Upgrade pip
+```sh
 python -m pip install --upgrade pip
 ```
 
