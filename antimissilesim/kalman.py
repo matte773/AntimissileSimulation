@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 # missile_reached_goal = 0
 # missile_intercepted = 0

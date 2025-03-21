@@ -6,7 +6,7 @@ from antimissilesim import mcts as MCTS
 from antimissilesim import pomdp as POMDP
 from antimissilesim import kalman as Kalman
 
-pytestmark = pytest.mark.skipif(sys.platform == 'win32', reason="Tests in this module do not run on Windows")
+# pytestmark = pytest.mark.skipif(sys.platform == 'win32', reason="Tests in this module do not run on Windows")
 
 # Test that each mode imports successfully
 def test_import():

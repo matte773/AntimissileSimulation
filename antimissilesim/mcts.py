@@ -4,6 +4,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
 import time
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 # Define the missile environment
 class MissileEnv: 

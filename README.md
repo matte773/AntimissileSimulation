@@ -20,11 +20,33 @@ git clone https://github.com/matte773/AntimissileSimulation.git
 cd AntimissileSimulation
 ```
 
-To enter into the venv enter the following:
-Using `pip`, install the package in editable mode:
+### (Optional) Creating a Virtual Environment (venv)
+To enter into the venv, enter the following:
 
 ```sh
+# Recreate the virtual environment using your OS's Python
+python -m venv .venv
+
+# Activate the new virtual environment
+Windows: 
+.\.venv\Scripts\Activate
+
+Linux/Mac:
 source .venv/bin/activate
+
+# Upgrade pip
+python -m pip install --upgrade pip
+```
+
+### (Optional) Destroying the Virtual Environment (venv)
+If the venv needs to be destroyed for any reason, use the following commands:
+
+```sh
+#Deactivate the virtual environment if it's active:
+deactivate
+
+#Remove the current virtual environment:
+Remove-Item -Recurse -Force .venv
 ```
 
 ### Install the Package
@@ -39,24 +61,23 @@ pip install -e .
 
 Once installed, you can run the anti-missile simulation using the `cli.py` script with different modes and options.
 
+The package can be run with as many or as few flags as the user desires. Below are examples of individual flags/command parameters. Flags can be added to the command in any order is desired.
+
 ### Basic Usage
 
-Run the default simulation using Kalman filtering:
-
+Run using Partially Observable Markov Decision Process (POMDP):
 ```sh
-python -m antimissilesim --mode kalman
+python -m antimissilesim --mode pomdp
 ```
 
 Run using Monte Carlo Tree Search (MCTS):
-
 ```sh
 python -m antimissilesim --mode mcts
 ```
 
-Run using Partially Observable Markov Decision Process (POMDP):
-
+Run the default simulation using Kalman filtering:
 ```sh
-python -m antimissilesim --mode pomdp
+python -m antimissilesim --mode kalman
 ```
 
 ### Additional Flags
@@ -66,7 +87,7 @@ You can customize the simulation by providing additional command-line arguments:
 - `--show_plots`: Enables plot animation (default is disabled).
   
   ```sh
-  python -m antimissilesim --mode kalman --show_plots
+  python -m antimissilesim --mode pomdp --show_plots
   ```
 
 - `--num_simulations <int>`: Number of simulations to run (default: 100).
@@ -81,19 +102,19 @@ You can customize the simulation by providing additional command-line arguments:
   python -m antimissilesim --max_steps 2000
   ```
 
-- `--missile_position <x y z>`: Initial missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
+- `--missile_position <x y z>`: Initial missile position in 3D space. If this flag is left out, the initial position will be randomized (recommended to leave out).
   
   ```sh
   python -m antimissilesim --missile_position 0 0 100
   ```
 
-- `--antimissile_position <x y z>`: Initial anti-missile position in 3D space. If this flag is left out the inital position will be randomized (recommended).
+- `--antimissile_position <x y z>`: Initial anti-missile position in 3D space. If this flag is left out, the initial position will be randomized (recommended to leave out).
   
   ```sh
   python -m antimissilesim --antimissile_position 10 10 200
   ```
 
-- `--goal_position <x y z>`: Goal position for the missile. If this flag is left out the inital position will be randomized (recommended).
+- `--goal_position <x y z>`: Goal position for the missile. If this flag is left out, the initial position will be randomized (recommended to leave out).
   
   ```sh
   python -m antimissilesim --goal_position 50 50 0
@@ -114,16 +135,22 @@ You can customize the simulation by providing additional command-line arguments:
 - `--weighting_factor <float>`: Adjusts evade weighting factor (default varies by mode: Kalman=0.5, MCTS=0.3, POMDP=0.8).
   
   ```sh
-  python -m antimissilesim --weighting_factor 0.6
+  python -m antimissilesim --weighting_factor 0.99
   ```
 
 ## Testing
 
-The package includes a test suite to verify functionality. The testing file is located in /test/example_test.py Run the tests using:
+The package includes a test suite to verify functionality. The testing file is located in `/test/example_test.py`. Run the tests using:
 
 ```sh
-  pytest
-  ```
+pytest
+```
+
+If warnings occur in the output, this is due to pytest having trouble interpreting one of my print outputs that needs UTF-8 encoding set. If this occurs, it is not an issue; the package is still functional. To fix this, run the following command for pytest instead:
+
+```sh
+python -X utf8 -m pytest
+```
 
 ## POMDP Planner Details
 

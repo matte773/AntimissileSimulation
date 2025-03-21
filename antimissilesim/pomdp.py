@@ -4,6 +4,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import random
 import time
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 # Define the missile environment
 class MissileEnv:    
@@ -276,12 +279,14 @@ def run_simulation(show_plots, num_simulations, max_steps, missile_position, ant
                         if env.is_goal_reached():
                             print("✅ Missile reached the goal!")
                             missile_reached_goal += 1
-                            input("Press Enter to continue...")
+                            #Optional: uncomment the line below to keep the plots open at the end of the simulation
+                            # input("Press Enter to continue...")
                             plt.close()
                         elif antimissile.intercepted:
                             print("❌ Anti-Missile intercepted the missile!")
                             missile_intercepted += 1
-                            input("Press Enter to continue...")
+                            #Optional: uncomment the line below to keep the plots open at the end of the simulation
+                            # input("Press Enter to continue...")
                             plt.close()
 
                         # Optional: Print final distances
